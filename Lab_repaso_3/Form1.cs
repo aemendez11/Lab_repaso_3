@@ -24,10 +24,9 @@ namespace Lab_repaso_3
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            cargar_Propiedades();
-            mostrar_Propiedades();
-            cargar_Propietarios();
-            mostrar_Propietarios();
+            //cargar_Propiedades();
+            //cargar_Propietarios();
+           
         }
         private void cargar_Propiedades()
         {
@@ -44,12 +43,7 @@ namespace Lab_repaso_3
             }
             reader.Close();
         }
-        private void mostrar_Propiedades()
-        {
-            dataGridViewPropiedades.DataSource = null;
-            dataGridViewPropiedades.DataSource = propiedad;
-            dataGridViewPropiedades.Refresh();
-        }
+   
         private void cargar_Propietarios ()
         {
             string fileName = "Propietarios.txt";
@@ -65,27 +59,59 @@ namespace Lab_repaso_3
             }
             reader.Close();
         }
-        private void mostrar_Propietarios()
-        {
-            dataGridViewPropietarios.DataSource = null;
-            dataGridViewPropietarios.DataSource = propiedad;
-            dataGridViewPropietarios.Refresh();
-        }
+
 
         private void button1_Click(object sender, EventArgs e)
         {
+            cargar_Propiedades();
+            cargar_Propietarios();
             if (reporte.Count == 0)
             {
+                reporte.Clear();
+               
                 foreach (Propietarios propietarios in propietario)
                 {
-                    Propiedades propiedades = propiedad.FirstOrDefault(c => c.Dpi == propietarios.Dpi);
-                    Reporte_propiedad reportes = new Reporte_propiedad();
-                    reportes.Nombre = propietarios.Nombre;
-                    reportes.Apellido = propietarios.Apellido;
-                    reportes.No_casa = propiedades.No_casa;
-                    reportes.Cuota_mantenimiento = propiedades.Cuota_mantenimiento;
-                    reporte.Add(reportes);
+                    List<Propiedades> propiedadesDelPropietario = propiedad.Where(p => p.Dpi == propietarios.Dpi).ToList();
+                    int contador = 0;
+                    foreach (Propiedades propiedad in propiedadesDelPropietario)
+                    {
+                        if (contador < 3)
+                        {
 
+                            Reporte_propiedad reportes = new Reporte_propiedad();
+                            reportes.Nombre = propietarios.Nombre;
+                            reportes.Apellido = propietarios.Apellido;
+                            reportes.No_casa = propiedad.No_casa;
+                            reportes.Cuota_mantenimiento = propiedad.Cuota_mantenimiento;
+                            reporte.Add(reportes);
+                        }
+                    }
+                }
+            }
+            dataGridView1.DataSource = null;
+            dataGridView1.DataSource = reporte;
+            dataGridView1.Refresh();
+
+        }
+
+        private void btnOrdenar_Click(object sender, EventArgs e)
+        {
+            if (reporte.Count > 0)
+            {
+                reporte = reporte.OrderByDescending(d => d.Cuota_mantenimiento).ToList();
+                List<Reporte_propiedad> cuotasAltas = reporte.OrderByDescending(d => d.Cuota_mantenimiento).Take(3).ToList();
+                List<Reporte_propiedad> cuotasBajas = reporte.OrderBy(d => d.Cuota_mantenimiento).Take(3).ToList();
+                dataGridView3.DataSource = cuotasAltas;
+                dataGridView3.Refresh();
+                dataGridView4.DataSource = cuotasBajas;
+                dataGridView4.Refresh();
+                dataGridView2.DataSource = reporte;
+                dataGridView2.Refresh();
+
+                Reporte_propiedad propietarioCuotaAlta = reporte.OrderByDescending(d => d.Cuota_mantenimiento).FirstOrDefault();
+                if (propietarioCuotaAlta != null)
+                {
+                    label1.Text = $"El propietario {propietarioCuotaAlta.Nombre} {propietarioCuotaAlta.Apellido} tiene la cuota total más alta: {propietarioCuotaAlta.Cuota_mantenimiento}";
                 }
             }
         }
